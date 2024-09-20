@@ -1,0 +1,200 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Grade Calculator</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            margin: 0;
+            background: url('picture.jpg') no-repeat center center fixed;
+            background-size: cover;
+            color: #fff;
+        }
+
+        .container {
+            background: rgba(0, 0, 0, 0.7);
+            padding: 30px;
+            border-radius: 10px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+            width: 360px;
+            text-align: center;
+        }
+
+        form {
+            margin-bottom: 20px;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 10px;
+            font-size: 18px;
+            color: #f8f9fa;
+        }
+
+        input {
+            width: 100%;
+            padding: 12px;
+            margin-bottom: 15px;
+            border: none;
+            border-radius: 5px;
+            font-size: 16px;
+            color: #212529;
+            background-color: #e9ecef;
+        }
+
+        button {
+            padding: 12px 20px;
+            border: none;
+            border-radius: 5px;
+            background-color: #007bff;
+            color: white;
+            font-size: 18px;
+            cursor: pointer;
+        }
+
+        button:hover {
+            background-color: #0056b3;
+        }
+
+        .result {
+            margin-top: 20px;
+            text-align: left;
+            font-size: 16px;
+        }
+
+        .result p {
+            margin: 10px 0;
+        }
+
+        .congratulations {
+            color: #28a745;
+            font-weight: bold;
+        }
+
+        .impossible {
+            color: #dc3545;
+            font-weight: bold;
+        }
+
+        .motivational {
+            color: #ffc107;
+            font-style: italic;
+        }
+
+        .joke {
+            color: #ffc107;
+            font-style: italic;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Grade Calculator</h1>
+        <form id="grade-form" onsubmit="return false;">
+            <label for="prelim_grade">Enter your Prelim Grade (0-100):</label>
+            <input type="number" id="prelim_grade" name="prelim_grade" min="0" max="100" required>
+            <button onclick="calculateGrades()">Calculate</button>
+        </form>
+        
+        <div id="result" class="result"></div>
+    </div>
+
+    <script>
+        function calculateGrades() {
+            const prelimGrade = parseFloat(document.getElementById('prelim_grade').value);
+            const passingGrade = 75;
+            const prelimWeight = 0.2;
+            const midtermWeight = 0.3;
+            const finalWeight = 0.5;
+            const deanListThreshold = 90; // Dean's List requires 90 or above total grade
+
+            if (isNaN(prelimGrade) || prelimGrade < 0 || prelimGrade > 100) {
+                document.getElementById('result').innerHTML = 'Please enter a valid Prelim grade between 0 and 100.';
+                return;
+            }
+
+            let deanListMessage = "";
+            let requiredMidtermAndFinalGrade = "";
+            let motivationalQuote = "";
+            let joke = "";
+
+            // Contribution of Prelim grade
+            const prelimContribution = prelimWeight * prelimGrade;
+
+            // Calculate the remaining grade needed to pass
+            const remainingGradeNeeded = passingGrade - prelimContribution;
+
+            // Required grade for both Midterm and Final to meet the remaining needed grade
+            requiredMidtermAndFinalGrade = remainingGradeNeeded / (midtermWeight + finalWeight);
+
+            // Cap the grades within the valid range
+            const validGrade = Math.min(100, Math.max(0, requiredMidtermAndFinalGrade));
+
+            // Calculate total grade with perfect scores in Midterm and Final
+            const maxPossibleTotalGrade = prelimContribution + midtermWeight * 100 + finalWeight * 100;
+            const isDeanListPossible = prelimGrade >= 70;
+
+            if (prelimGrade < 20) {
+                joke = "<p class='joke'>Why did the student bring a ladder to school? Because they heard the grades were below ground level! Time to start climbing up!</p>";
+            }
+
+            if (prelimGrade == 40) {
+                motivationalQuote = "<p class='motivational'>Don't let one grade define your potential! This is just the beginning. Keep pushing forward!</p>";
+            }
+
+            if (prelimGrade < 70) {
+                deanListMessage = "With a Prelim grade below 70, it is impossible to achieve Dean's List status, regardless of your performance in Midterms and Finals.";
+            } else {
+                if (prelimGrade >= 90) {
+                    if (isDeanListPossible) {
+                        deanListMessage = `<p class="congratulations">Congratulations! With a Prelim grade of ${prelimGrade.toFixed(2)}, you qualify for the Dean's List if you achieve at least ${validGrade.toFixed(2)} in both Midterm and Final.</p>`;
+                    } else {
+                        deanListMessage = "Unfortunately, even if you achieve perfect scores in Midterms and Finals, you will not be able to qualify for the Dean’s List. Stay motivated and keep working towards your goals!";
+                    }
+                } else {
+                    const requiredForDeanList = (deanListThreshold - prelimContribution) / (midtermWeight + finalWeight);
+                    const deanListMidtermFinal = Math.min(100, Math.max(0, requiredForDeanList));
+                    if (deanListMidtermFinal > 100) {
+                        deanListMessage = "It is not possible to achieve Dean's List status with your current Prelim grade, even with the highest possible grades in Midterm and Final.";
+                    } else {
+                        deanListMessage = `To be eligible for the Dean's List, aim for ${deanListMidtermFinal.toFixed(2)} in both Midterm and Final.`;
+                    }
+                }
+            }
+
+            // Determine pass status
+            const passStatus = prelimGrade >= passingGrade ? "Great job! You have a strong chance of passing the course." : "Passing the course will be challenging. Keep pushing and improving your scores.";
+
+            document.getElementById('result').innerHTML = `
+                <p><strong>Your Prelim Grade:</strong> ${prelimGrade.toFixed(2)}</p>
+                <p><strong>Status:</strong> ${passStatus}</p>
+                <p><strong>Required Midterm Grade:</strong> ${validGrade.toFixed(2)}</p>
+                <p><strong>Required Final Grade:</strong> ${validGrade.toFixed(2)}</p>
+                <p>${deanListMessage}</p>
+                ${motivationalQuote}
+                ${joke}
+            `;
+        }
+    </script>
+</body>
+</html>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
